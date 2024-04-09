@@ -51,16 +51,10 @@ func (f *fileRepository) UpdateStack(st model.Stack) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	oldSt, pos := f.findStack(st.Name, st.Repository)
+	_, pos := f.findStack(st.Name, st.Repository)
 	if pos == -1 {
 		return errors.ErrNotFound
 	}
-
-	if err := oldSt.OptimisticLock.PreUpdate(st.ResourceVersion); err != nil {
-		return err
-	}
-
-	st.ResourceVersion = oldSt.ResourceVersion
 
 	f.f.Data.Stacks[pos] = st
 

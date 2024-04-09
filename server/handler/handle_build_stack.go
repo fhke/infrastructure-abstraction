@@ -51,7 +51,7 @@ func (h *Handler) HandleBuildStack(ctx *gin.Context) {
 		Modules: lo.MapValues(stack.Modules, func(mod model.Module, _ string) response.BuildStackModule {
 			return response.BuildStackModule{
 				Source:  mod.Source,
-				Version: mod.Version.String(),
+				Version: mod.Version,
 			}
 		}),
 	})

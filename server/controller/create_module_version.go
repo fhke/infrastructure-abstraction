@@ -4,12 +4,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Masterminds/semver"
 	storageErr "github.com/fhke/infrastructure-abstraction/server/storage/common/errors"
 	"github.com/fhke/infrastructure-abstraction/server/storage/module/model"
 )
 
-func (c *controllerImpl) CreateModuleVersion(module, source string, version *semver.Version) error {
+func (c *controllerImpl) CreateModuleVersion(module, source, version string) error {
 	if err := c.moduleRepo.AddVersion(model.ModuleVersion{
 		Name:    module,
 		Source:  source,

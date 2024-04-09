@@ -48,7 +48,7 @@ func (f *fileRepository) AddVersion(mv model.ModuleVersion) error {
 	}
 
 	for _, exMv := range f.f.Data.Modules[mv.Name] {
-		if exMv.Version.Equal(mv.Version) {
+		if exMv.Version == mv.Version {
 			return errors.ErrAlreadyExists
 		}
 	}

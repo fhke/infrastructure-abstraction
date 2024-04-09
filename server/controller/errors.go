@@ -2,8 +2,6 @@ package controller
 
 import (
 	"fmt"
-
-	"github.com/Masterminds/semver"
 )
 
 type ErrStackNotFound struct {
@@ -25,7 +23,7 @@ func (e ErrModuleNotFound) Error() string {
 
 type ErrModuleVersionAlreadyExists struct {
 	Name    string
-	Version *semver.Version
+	Version string
 }
 
 func (e ErrModuleVersionAlreadyExists) Error() string {

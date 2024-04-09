@@ -61,7 +61,8 @@ func main() {
 		WithName("test-pg96").
 		WithMasterUsername("root").
 		WithEngine("aurora-postgresql").
-		WithEngineVersion("14.5")
+		WithEngineVersion("14.5").
+		WithInput("skip_final_snapshot", true)
 
 	// Deploy
 	if err := stack.Deploy(context.TODO()); err != nil {

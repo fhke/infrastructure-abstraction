@@ -28,7 +28,7 @@ func (h *Handler) HandleCreateModuleVersion(ctx *gin.Context) {
 	// build stack
 	if err := h.ctrl.CreateModuleVersion(req.Name, req.Source, req.Version); err != nil {
 		if _, ok := err.(controller.ErrModuleVersionAlreadyExists); ok {
-			log.Warnw("Request to create pre-existing module & version", "module", req.Name, "version", req.Version.String())
+			log.Warnw("Request to create pre-existing module & version", "module", req.Name, "version", req.Version)
 			ctx.JSON(http.StatusConflict, response.Error{Message: "version for module already exists"})
 			return
 		}
