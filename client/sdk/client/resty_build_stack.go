@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/fhke/infrastructure-abstraction/util"
+	"github.com/fhke/infrastructure-abstraction/client/util"
 )
 
 func (c *restyClient) BuildStack(ctx context.Context, name, repository string, moduleNames []string) (BuildStackOut, error) {
