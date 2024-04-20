@@ -6,15 +6,28 @@ type restyClient struct {
 	cl *resty.Client
 }
 
-func New(baseURL string) Client {
+type ClientOpt func(r *restyClient)
+
+func WithBasicAuth(username, password string) ClientOpt {
+	return func(r *restyClient) {
+		r.cl.SetBasicAuth(username, password)
+	}
+}
+
+func New(baseURL string, opts ...ClientOpt) Client {
 	cl := resty.
 		New().
 		SetBaseURL(baseURL)
-	return NewForClient(cl)
+	return NewForClient(cl, opts...)
+
 }
 
-func NewForClient(cl *resty.Client) Client {
-	return &restyClient{
-		cl: cl,
+func NewForClient(rst *resty.Client, opts ...ClientOpt) Client {
+	cl := &restyClient{
+		cl: rst,
 	}
+	for _, opt := range opts {
+		opt(cl)
+	}
+	return cl
 }
