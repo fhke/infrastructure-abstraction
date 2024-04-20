@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/fhke/infrastructure-abstraction/util/git"
+	"github.com/fhke/infrastructure-abstraction/client/util/git"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

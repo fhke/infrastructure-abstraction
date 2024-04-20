@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/Masterminds/semver"
-	"github.com/fhke/infrastructure-abstraction/sdk/client"
+	"github.com/fhke/infrastructure-abstraction/client/sdk/client"
 )
 
 func main() {
