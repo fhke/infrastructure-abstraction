@@ -2,9 +2,9 @@ package handler
 
 import "github.com/gin-gonic/gin"
 
-func (h *Handler) Register(e *gin.Engine) {
-	e.POST("/api/stack/build", h.HandleBuildStack)
-	e.POST("/api/modules", h.HandleCreateModuleVersion)
-	e.GET("/api/modules", h.HandleGetModuleNames)
-	e.PATCH("/api/stack", h.HandleSetStackModules)
+func (h *Handler) Register(routes gin.IRoutes) {
+	routes.POST("/api/stack/build", h.HandleBuildStack)
+	routes.POST("/api/modules", h.HandleCreateModuleVersion)
+	routes.GET("/api/modules", h.HandleGetModuleNames)
+	routes.PATCH("/api/stack", h.HandleSetStackModules)
 }
