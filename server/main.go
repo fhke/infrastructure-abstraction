@@ -11,12 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/fhke/infrastructure-abstraction/server/controller"
 	"github.com/fhke/infrastructure-abstraction/server/handler"
-	modulesRepository "github.com/fhke/infrastructure-abstraction/server/storage/module/repository"
 	dynamoModuleRepository "github.com/fhke/infrastructure-abstraction/server/storage/module/repository/dynamo"
-	fileModuleRepository "github.com/fhke/infrastructure-abstraction/server/storage/module/repository/file"
-	stackRepository "github.com/fhke/infrastructure-abstraction/server/storage/stack/repository"
 	dynamoStackRepository "github.com/fhke/infrastructure-abstraction/server/storage/stack/repository/dynamo"
-	fileStackRepository "github.com/fhke/infrastructure-abstraction/server/storage/stack/repository/file"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
@@ -27,43 +23,24 @@ import (
 func main() {
 	var (
 		// Storage configuration flags.
-		storageStrategy    = flag.String("storage", "file", "Data storage strategy to use. Must be either \"dynamo\" or \"file\".")
-		dataPathStacks     = flag.String("file.stacks", "./tmp/stacks.json", "Path to file containing stacks database. Only used for \"file\" storage strategy.")
-		dataPathModules    = flag.String("file.modules", "./tmp/modules.json", "Path to file containing modules database. Only used for \"file\" storage strategy.")
-		dynamoTableStacks  = flag.String("dynamo.stacks", "stacks", "Name of DynamoDB table for stacks data. Only used for \"dynamo\" storage strategy.")
-		dynamoTableModules = flag.String("dynamo.modules", "modules", "Name of DynamoDB table for modules data. Only used for \"dynamo\" storage strategy.")
+		dynamoTableStacks  = flag.String("dynamo-table.stacks", "stacks", "Name of DynamoDB table for stacks data.")
+		dynamoTableModules = flag.String("dynamo-table.modules", "modules", "Name of DynamoDB table for modules data.")
 
 		// Server configuration flags.
 		listenAddr = flag.String("listen-addr", "127.0.0.1:9001", "Address to bind server to")
 		debug      = flag.Bool("debug", false, "Enable debug logging")
-
-		// impl vars
-		stRepo  stackRepository.Repository
-		modRepo modulesRepository.Repository
 	)
 	flag.Parse()
 
 	log := mustLog(*debug)
 
-	switch ss := *storageStrategy; ss {
-	case "dynamo":
-		log.Info("Using dynamo storage strategy")
-		cl := dynamodb.NewFromConfig(lo.Must(config.LoadDefaultConfig(context.TODO())))
-		modRepo = dynamoModuleRepository.New(cl, *dynamoTableModules)
-		stRepo = dynamoStackRepository.New(cl, *dynamoTableStacks)
-	case "file":
-		log.Info("Using file storage strategy")
-		stacksDataFile := lo.Must(os.OpenFile(*dataPathStacks, os.O_CREATE|os.O_RDWR, 0644))
-		modulesDataFile := lo.Must(os.OpenFile(*dataPathModules, os.O_CREATE|os.O_RDWR, 0644))
-		modRepo = lo.Must(fileModuleRepository.New(modulesDataFile))
-		stRepo = lo.Must(fileStackRepository.New(stacksDataFile))
-	default:
-		log.Panicf("Unknown storage strategy %q", ss)
-	}
+	cl := dynamodb.NewFromConfig(lo.Must(config.LoadDefaultConfig(context.TODO())))
 
-	ctrl := controller.New(log.Named("controller"), stRepo, modRepo)
-
-	h := handler.New(log.Named("handler"), ctrl)
+	h := handler.New(log.Named("handler"), controller.New(
+		log.Named("controller"),
+		dynamoStackRepository.New(cl, *dynamoTableStacks),
+		dynamoModuleRepository.New(cl, *dynamoTableModules),
+	))
 
 	gin.SetMode(gin.ReleaseMode)
 	ginE := gin.New()
@@ -71,8 +48,7 @@ func main() {
 		ginzap.Ginzap(log.Desugar().Named("request"), time.RFC3339, true),
 		ginzap.RecoveryWithZap(log.Desugar().Named("recovery"), true),
 	)
-	ginE.POST("/api/stack/build", h.HandleBuildStack)
-	ginE.POST("/api/modules", h.HandleCreateModuleVersion)
+	h.Register(ginE)
 
 	srv := &http.Server{
 		Addr:    *listenAddr,

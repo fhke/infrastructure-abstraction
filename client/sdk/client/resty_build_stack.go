@@ -8,7 +8,7 @@ import (
 	"github.com/fhke/infrastructure-abstraction/client/util"
 )
 
-func (c *restyClient) BuildStack(ctx context.Context, name, repository string, moduleNames []string) (BuildStackOut, error) {
+func (c *restyClient) BuildStack(ctx context.Context, name, repository string, moduleNames []string) (Stack, error) {
 	type request struct {
 		Name        string   `json:"name"`
 		Repository  string   `json:"repository"`
@@ -25,14 +25,14 @@ func (c *restyClient) BuildStack(ctx context.Context, name, repository string, m
 		Post("/api/stack/build")
 
 	if err != nil {
-		return BuildStackOut{}, fmt.Errorf("request error: %w", err)
+		return Stack{}, fmt.Errorf("request error: %w", err)
 	} else if resp.StatusCode() != http.StatusOK {
-		return BuildStackOut{}, fmt.Errorf("expected status code %d, got %d", http.StatusOK, resp.StatusCode())
+		return Stack{}, fmt.Errorf("expected status code %d, got %d", http.StatusOK, resp.StatusCode())
 	}
 
-	bso, err := util.UnmarshalJSONRestyResp[BuildStackOut](resp)
+	bso, err := util.UnmarshalJSONRestyResp[Stack](resp)
 	if err != nil {
-		return BuildStackOut{}, fmt.Errorf("error decoding body: %w", err)
+		return Stack{}, fmt.Errorf("error decoding body: %w", err)
 	}
 
 	return bso, nil

@@ -1,8 +1,13 @@
 package repository
 
-import "github.com/fhke/infrastructure-abstraction/server/storage/module/model"
+import (
+	"context"
+
+	"github.com/fhke/infrastructure-abstraction/server/storage/module/model"
+)
 
 type Repository interface {
-	GetVersions(name string) ([]model.ModuleVersion, error)
-	AddVersion(mv model.ModuleVersion) error
+	GetModuleNames(ctx context.Context) ([]string, error)
+	GetVersions(ctx context.Context, name string) ([]model.ModuleVersion, error)
+	AddVersion(ctx context.Context, mv model.ModuleVersion) error
 }

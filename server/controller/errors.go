@@ -1,8 +1,11 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 )
+
+var ErrModuleVersionNotFound = errors.New("module version not found")
 
 type ErrStackNotFound struct {
 	Stack string

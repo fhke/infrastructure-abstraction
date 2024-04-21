@@ -1,9 +1,13 @@
 package repository
 
-import "github.com/fhke/infrastructure-abstraction/server/storage/stack/model"
+import (
+	"context"
+
+	"github.com/fhke/infrastructure-abstraction/server/storage/stack/model"
+)
 
 type Repository interface {
-	GetStack(name, repository string) (model.Stack, error)
-	AddStack(model.Stack) error
-	UpdateStack(model.Stack) error
+	GetStack(ctx context.Context, name, repository string) (model.Stack, error)
+	AddStack(context.Context, model.Stack) error
+	UpdateStack(context.Context, model.Stack) error
 }

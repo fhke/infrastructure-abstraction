@@ -34,16 +34,16 @@ func New(cl *dynamodb.Client, tableName string) repository.Repository {
 	}
 }
 
-func (d *dynamoRepository) GetVersions(name string) ([]model.ModuleVersion, error) {
-	item, err := d.getDocument(context.TODO(), name)
+func (d *dynamoRepository) GetVersions(ctx context.Context, name string) ([]model.ModuleVersion, error) {
+	item, err := d.getDocument(ctx, name)
 	if err != nil {
 		return nil, err
 	}
 	return item.Versions, nil
 }
 
-func (d *dynamoRepository) AddVersion(mv model.ModuleVersion) error {
-	item, err := d.getDocument(context.TODO(), mv.Name)
+func (d *dynamoRepository) AddVersion(ctx context.Context, mv model.ModuleVersion) error {
+	item, err := d.getDocument(ctx, mv.Name)
 	if err != nil {
 		if errors.Is(err, storageErrors.ErrNotFound) {
 			item = dynamoModel{
@@ -61,7 +61,7 @@ func (d *dynamoRepository) AddVersion(mv model.ModuleVersion) error {
 		return fmt.Errorf("error marshalling new value: %w", err)
 	}
 
-	_, err = d.cl.PutItem(context.TODO(), &dynamodb.PutItemInput{
+	_, err = d.cl.PutItem(ctx, &dynamodb.PutItemInput{
 		Item:      itemMap,
 		TableName: ptr.To(d.tableName),
 	})
@@ -69,6 +69,31 @@ func (d *dynamoRepository) AddVersion(mv model.ModuleVersion) error {
 		return fmt.Errorf("error putting item: %w", err)
 	}
 	return nil
+}
+
+func (d *dynamoRepository) GetModuleNames(ctx context.Context) ([]string, error) {
+	pag := dynamodb.NewScanPaginator(d.cl, &dynamodb.ScanInput{
+		TableName:            ptr.To(d.tableName),
+		ProjectionExpression: ptr.To(primaryKey),
+		Select:               types.SelectSpecificAttributes,
+	})
+
+	names := make([]string, 0)
+	for pag.HasMorePages() {
+		scanResult, err := pag.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning table: %w", err)
+		}
+		for _, item := range scanResult.Items {
+			pkVal, ok := item[primaryKey]
+			if !ok {
+				return nil, ErrNoPrimaryKey
+			}
+			names = append(names, pkVal.(*types.AttributeValueMemberS).Value)
+		}
+	}
+
+	return names, nil
 }
 
 func (d *dynamoRepository) getDocument(ctx context.Context, name string) (dynamoModel, error) {

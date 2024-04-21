@@ -1,19 +1,20 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Masterminds/semver"
 	"github.com/fhke/infrastructure-abstraction/server/storage/module/model"
 )
 
-func (c *controllerImpl) getLatestModuleVersion(module string) (model.ModuleVersion, error) {
+func (c *controllerImpl) getLatestModuleVersion(ctx context.Context, module string) (model.ModuleVersion, error) {
 	var (
 		latest        model.ModuleVersion
 		latestVersion *semver.Version
 	)
 
-	mvs, err := c.moduleRepo.GetVersions(module)
+	mvs, err := c.moduleRepo.GetVersions(ctx, module)
 	if err != nil {
 		return model.ModuleVersion{}, fmt.Errorf("error getting module versions: %w", err)
 	}

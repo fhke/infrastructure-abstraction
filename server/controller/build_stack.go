@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -9,12 +10,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-func (c *controllerImpl) BuildStack(name, repo string, moduleNames sets.Set[string]) (model.Stack, error) {
+func (c *controllerImpl) BuildStack(ctx context.Context, name, repo string, moduleNames sets.Set[string]) (model.Stack, error) {
 	log := c.log.With("operation", "build_stack", "stack", map[string]string{"name": name, "repository": repo})
 
 	// Get existing stack from DB
 	isCreate := false
-	st, err := c.stackRepo.GetStack(name, repo)
+	st, err := c.stackRepo.GetStack(ctx, name, repo)
 	if err != nil {
 		if errors.Is(err, storageErr.ErrNotFound) {
 			log.Debug("Building new stack")
@@ -43,7 +44,7 @@ func (c *controllerImpl) BuildStack(name, repo string, moduleNames sets.Set[stri
 		}
 		hasChanges = true
 		// get latest version of module
-		latestMv, err := c.getLatestModuleVersion(modName)
+		latestMv, err := c.getLatestModuleVersion(ctx, modName)
 		if err != nil {
 			if errors.Is(err, storageErr.ErrNotFound) {
 				// request specified a nonexistent module
@@ -62,13 +63,13 @@ func (c *controllerImpl) BuildStack(name, repo string, moduleNames sets.Set[stri
 
 	// persist updated stack
 	if isCreate {
-		if err := c.stackRepo.AddStack(st); err != nil {
+		if err := c.stackRepo.AddStack(ctx, st); err != nil {
 			log.Errorw("Error creating stack", "error", err)
 			return model.Stack{}, fmt.Errorf("error creating stack: %w", err)
 		}
 		log.Debug("Created stack")
 	} else if hasChanges {
-		if err := c.stackRepo.UpdateStack(st); err != nil {
+		if err := c.stackRepo.UpdateStack(ctx, st); err != nil {
 			log.Errorw("Error updating stack", "error", err)
 			return model.Stack{}, fmt.Errorf("error updating stack: %w", err)
 		}

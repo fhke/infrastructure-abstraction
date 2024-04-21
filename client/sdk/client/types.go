@@ -1,7 +1,7 @@
 package client
 
 type (
-	BuildStackOut struct {
+	Stack struct {
 		Modules map[string]BuildStackOutModule `json:"modules"`
 	}
 	BuildStackOutModule struct {

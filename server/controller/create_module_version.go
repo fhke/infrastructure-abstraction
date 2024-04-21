@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -8,8 +9,8 @@ import (
 	"github.com/fhke/infrastructure-abstraction/server/storage/module/model"
 )
 
-func (c *controllerImpl) CreateModuleVersion(module, source, version string) error {
-	if err := c.moduleRepo.AddVersion(model.ModuleVersion{
+func (c *controllerImpl) CreateModuleVersion(ctx context.Context, module, source, version string) error {
+	if err := c.moduleRepo.AddVersion(ctx, model.ModuleVersion{
 		Name:    module,
 		Source:  source,
 		Version: version,

@@ -30,7 +30,7 @@ func (h *Handler) HandleBuildStack(ctx *gin.Context) {
 	}
 
 	// build stack
-	stack, err := h.ctrl.BuildStack(req.Name, req.Repository, sets.New(req.ModuleNames...))
+	stack, err := h.ctrl.BuildStack(ctx, req.Name, req.Repository, sets.New(req.ModuleNames...))
 	if err != nil {
 		if _, ok := err.(controller.ErrStackNotFound); ok {
 			ctx.JSON(http.StatusNotFound, response.Error{Message: "stack not found"})
@@ -47,9 +47,9 @@ func (h *Handler) HandleBuildStack(ctx *gin.Context) {
 	}
 
 	// send response
-	ctx.JSON(http.StatusOK, response.BuildStack{
-		Modules: lo.MapValues(stack.Modules, func(mod model.Module, _ string) response.BuildStackModule {
-			return response.BuildStackModule{
+	ctx.JSON(http.StatusOK, response.Stack{
+		Modules: lo.MapValues(stack.Modules, func(mod model.Module, _ string) response.StackModule {
+			return response.StackModule{
 				Source:  mod.Source,
 				Version: mod.Version,
 			}

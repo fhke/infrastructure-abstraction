@@ -34,11 +34,11 @@ func New(cl *dynamodb.Client, tableName string) repository.Repository {
 	}
 }
 
-func (d *dynamoRepository) GetStack(name, repository string) (model.Stack, error) {
-	return d.getDocument(context.TODO(), name, repository)
+func (d *dynamoRepository) GetStack(ctx context.Context, name, repository string) (model.Stack, error) {
+	return d.getDocument(ctx, name, repository)
 }
 
-func (d *dynamoRepository) AddStack(stack model.Stack) error {
+func (d *dynamoRepository) AddStack(ctx context.Context, stack model.Stack) error {
 	itemMap, err := attributevalue.MarshalMap(dynamoModel{
 		StackID: toStackId(stack.Name, stack.Repository),
 		Stack:   stack,
@@ -47,7 +47,7 @@ func (d *dynamoRepository) AddStack(stack model.Stack) error {
 		return fmt.Errorf("error marshalling new value: %w", err)
 	}
 
-	_, err = d.cl.PutItem(context.TODO(), &dynamodb.PutItemInput{
+	_, err = d.cl.PutItem(ctx, &dynamodb.PutItemInput{
 		Item:      itemMap,
 		TableName: ptr.To(d.tableName),
 	})
@@ -57,15 +57,14 @@ func (d *dynamoRepository) AddStack(stack model.Stack) error {
 	return nil
 }
 
-func (d *dynamoRepository) UpdateStack(stack model.Stack) error {
-	ctx := context.TODO()
+func (d *dynamoRepository) UpdateStack(ctx context.Context, stack model.Stack) error {
 	if _, err := d.getDocument(ctx, stack.Name, stack.Repository); err != nil {
 		if errors.Is(err, storageErrors.ErrNotFound) {
 			return err
 		}
 		return fmt.Errorf("get document error: %w", err)
 	}
-	return d.AddStack(stack)
+	return d.AddStack(ctx, stack)
 }
 
 func (d *dynamoRepository) getDocument(ctx context.Context, name, repo string) (model.Stack, error) {

@@ -10,7 +10,7 @@ docker run \
 
 sleep 3
 
-export AWS_ACCESS_KEY_ID=DUMMYIDEXAMPLE AWS_SECRET_ACCESS_KEY=DUMMYEXAMPLEKEY AWS_ENDPOINT_URL=http://localhost:8000
+export AWS_ACCESS_KEY_ID=DUMMYIDEXAMPLE AWS_SECRET_ACCESS_KEY=DUMMYEXAMPLEKEY AWS_ENDPOINT_URL=http://localhost:8000 AWS_REGION=eu-west-1
 
 aws dynamodb create-table \
     --table-name stacks \
